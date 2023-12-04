@@ -1,0 +1,12 @@
+# Zig language support
+ziglang/zig.vim
+
+# Haskell language support
+neovimhaskell/haskell-vim
+
+# themes
+sainnhe/gruvbox-material
+Shatur/neovim-ayu
+liuchengxu/space-vim-dark
+ntk148v/vim-horizon
+jnurmine/Zenburn

@@ -1,0 +1,23 @@
+
+
+
+          ,      ,$$$$$.  ,$;  ,$.   ,$;,$$$.  
+         .;,    ;$$,,,    ;$'  ;$'   ;$$   ;$ 
+      '";$:""'   '""$$;   $$   $$    $$    $$
+         ;     '$$$$$'    '$$$$$$   ,$'   ,$'
+                                        
+                 ,$                         
+     ,$$$$$.  ,$$$$$$'   ,$$$,$;   ,$;,$$;   
+    ;$$,,,      ;$'     ;$   ;$'   ;$$       
+     '""$$;     $$      $$   $$    $$        
+    '$$$$$'    ,$'      '$$$$$$.  ,$'         
+    
+
+      vanilla lua config for neovim ~
+      
+      space-key mappings
+      VCS integration
+      straightforward config
+
+      [ Github ]
+      https://github.com/szym-mie/sunstar

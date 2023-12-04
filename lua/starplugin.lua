@@ -1,0 +1,142 @@
+local starplugin = {
+	plugins = {},
+	plugin_count = 0,
+	update_count = 0,
+	missing_count = 0,
+	plugins_checked = 0,
+}
+
+local starpopup = require('starpopup')
+
+local function get_plugin_item(dir)
+	return {
+		dir = dir,
+		done = false,
+		is_missing = false,
+		has_updates = false,
+	}
+end
+
+local function update_plugins()
+	vim.g.plug_window = ''
+	vim.cmd([[tabe]])
+	vim.cmd([[PlugUpdate]])
+end
+
+local function get_check_complete_popup_text(missing_count, update_count)
+	local text = ''
+	if missing_count > 0 then
+		text = text..missing_count..' plugin/s missing'
+	end
+	if update_count > 0 then
+		local sep = missing_count > 0 and ' + ' or ''
+		text = text..sep..update_count..' update/s available'
+	end
+	return text..'. Do you want to update now?'
+end
+
+local function on_check_complete()
+	if starplugin.missing_count > 0 or starplugin.update_count > 0 then
+		local level = starplugin.missing_count > 0 and 'warn' or 'info'
+		starpopup.popup(
+			'StarPlugin',
+			level,
+			get_check_complete_popup_text(starplugin.missing_count, starplugin.update_count),
+			{
+				starpopup.action { key = '<Enter>', text = 'update', run = update_plugins },
+				starpopup.action_dismiss('q'),
+			},
+			2)
+	end
+end
+
+local function check_for_update_job_fn(plugin_id)
+	return function (_, data, _)
+		local plugin = starplugin.plugins[plugin_id]
+		plugin.done = true
+
+		-- detect missing plugins too.
+		local commits_behind_count = tonumber(data[1])
+		local is_missing = commits_behind_count == nil
+		local has_updates = (commits_behind_count or 0) > 0
+		if is_missing then
+			plugin.is_missing = true
+			starplugin.missing_count = starplugin.missing_count + 1
+		end
+		if has_updates then
+			plugin.has_updates = true
+			starplugin.update_count = starplugin.update_count + 1
+		end
+
+		starplugin.plugins_checked = starplugin.plugins_checked + 1
+		if starplugin.plugins_checked == starplugin.plugin_count then
+			on_check_complete()
+		end
+	end
+end
+
+local function check_for_update(plugin_id)
+	local plugin = starplugin.plugins[plugin_id]
+	local dir = plugin.dir
+
+	local count_job_opts = {
+		on_stdout = check_for_update_job_fn(plugin_id),
+		stdout_buffered = true,
+	}
+	local count_cmd = 'git -C '..dir..' rev-list HEAD..origin --count'
+
+	local fetch_job_opts = {
+		on_exit = function (_, exit_code, _)
+			vim.fn.jobstart(count_cmd, count_job_opts)
+		end
+	}
+	local fetch_cmd = 'git -C '..dir..' fetch'
+
+	vim.fn.jobstart(fetch_cmd, fetch_job_opts)
+end
+
+starplugin.run_update = function ()
+	for plugin_id, plugin_info in pairs(vim.g.plugs) do
+		local dir = plugin_info.dir
+		starplugin.plugins[plugin_id] = get_plugin_item(dir)
+		starplugin.plugin_count = starplugin.plugin_count + 1
+	end
+
+	for plugin_id in pairs(starplugin.plugins) do
+		check_for_update(plugin_id)
+	end
+end
+
+starplugin.is_installed = function ()
+	local data_dir = vim.fn.stdpath('data')..'/site'
+	return vim.fn.filereadable(data_dir..'/autoload/plug.vim')
+end
+
+starplugin.try_install = function ()
+	local data_dir = vim.fn.stdpath('data')..'/site'
+	local has_plugvim = vim.fn.filereadable(data_dir..'/autoload/plug.vim')
+	if has_plugvim == 0 then
+		vim.print('Installing plugin manager now.')
+		local url = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+		local curl_cmd = 'curl --insecure -fLo '..data_dir..'/autoload/plug.vim --create-dirs '..url
+		local curl_job_id = vim.fn.jobstart(curl_cmd, {})
+		vim.fn.jobwait({curl_job_id})
+		return false
+	end
+	return true
+end
+
+starplugin.get_addons = function (plugin_load, filepath)
+	local abs_filepath = vim.fn.stdpath('config')..'/'..(filepath or 'plugins.txt')
+	local lines = vim.fn.readfile(abs_filepath)
+	for _, line in ipairs(lines) do
+		local comment_start, _ = string.find(line, '#')
+		local line_end = comment_start or 0
+		local plugin_id = string.gsub(string.sub(line, 1, line_end - 1), '%s', '')
+		if #plugin_id > 0 then
+			plugin_load(plugin_id)
+		end
+	end
+end
+
+return starplugin

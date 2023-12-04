@@ -1,0 +1,8 @@
+AFTER INSTALL
+
+Check if the plugin manager has been installed correctly.
+On next Neovim boot plugin installation will be run.
+
+To add your plugins, open plugins.txt.
+
+This config uses vim-plug (https://github.com/junegunn/vim-plug).

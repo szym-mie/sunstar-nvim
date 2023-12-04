@@ -1,0 +1,47 @@
+TODO
+suggestions/fixes
+
+# General
+
+[1] more config options in lua modules ('setup' functions with more options,
+    and sometimes any options :P).
+    Other options: amount of tab spaces, disable relative line numbers,
+        
+[2] export more common config options to the 'starconfig' instead of 
+    'init.lua', most options should be accesible by keystreaks.
+
+[3] auto-save after typing, like in intelliJ editors.
+
+# starvcs
+
+[1] add 'git log' coloring via builtin highlighting (later, after the module
+    gets basic functionality)
+
+[2] make the module stable - right now it is quite unstable and in a more of
+    a debug state than anything
+
+# starkeys
+
+[1] right now when the keystreak is incomplete, a window will appear, but the
+    buffer is cleared and you have to retype the keystreak, add a loop keeping
+    current selection and 'ESC' key clear keystreak to clear the current input.
+
+# starplugin
+
+[1] it seems the automatic update is broken for some reason, does not run
+    on startup unless your local repos are clear/reverted. [DONE]
+
+# starfinder
+
+[1] a project finder tool, remembers last projects and any opened file
+    outside of them. [MAJOR REDESIGN]
+
+# starproject
+
+[1] create a project which remembers opened workspace (just opened files for 
+    now), define commandline project tasks (build, clean, etc)
+
+[2] screen to select last used projects
+
+[3] ability to open project diectory as a project (if you cannot find it in 
+    recents)
