@@ -101,7 +101,7 @@ local function read_apply(lines, apply_callbacks)
 	return store
 end
 
-function starstore.setup (opts)
+function starstore.setup (_)
 	vim.api.nvim_create_autocmd({'VimLeave'}, {
 		callback = function (_)
 			for _, store in ipairs(starstore.stores) do

@@ -65,6 +65,7 @@ end
 local starstore = require('starstore')
 starstore.setup({})
 
+-- main config
 local main_config = starstore.new({
 	filepath = starstore.in_config_path('config.txt'),
 	apply_callbacks = {
