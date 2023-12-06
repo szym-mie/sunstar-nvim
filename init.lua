@@ -1,17 +1,29 @@
 local starplugin = require('starplugin')
 
 
+vim.print('--- Messages start ---')
 -- plugin manager install
+local install_success = false
 if not starplugin.try_install() then
-	vim.print('Completed.')
+	vim.print('--- Installation summary ---')
 	vim.cmd.sleep(2)
 	local config_dir = vim.fn.stdpath('config')
 	local after_install_path = config_dir..'/AFTER_INSTALL.txt'
 	local init_path = config_dir..'/init.lua'
 	vim.cmd.tabe(init_path)
 	vim.cmd.tabe(after_install_path)
-	vim.print('plug-vim: '..(starplugin.is_installed() and 'ok' or 'not found'))
-	return
+	if (starplugin.is_installed()) then
+		vim.print('[OK] plug-vim: installation success')
+		install_success = true
+	else
+		vim.print('[Error] plug-vim: NOT FOUND - CHECK INSTALLATION')
+	end
+	vim.cmd.mes()
+	if not install_success then
+		return
+	else
+		vim.cmd.source(starplugin.get_plug_vim_path())
+	end
 end
 
 
@@ -43,6 +55,11 @@ starplugin.get_addons(Plug)
 
 vim.call('plug#end')
 
+-- after plug installed run plugin update
+if install_success then
+	starplugin.update_plugins()
+end
+
 
 -- load the config - set theme etc.
 local starstore = require('starstore')
@@ -51,7 +68,7 @@ starstore.setup({})
 local main_config = starstore.new({
 	filepath = starstore.in_config_path('config.txt'),
 	apply_callbacks = {
-		theme = vim.cmd.colorscheme,
+		['theme'] = vim.cmd.colorscheme,
 	}
 })
 
@@ -76,7 +93,7 @@ local config_keys = {
 	end },
 	starkeys.cmd { path = 'T', name = 'theme', run = function ()
 		local theme = vim.fn.input('theme: ', '', 'color')
-		starstore.set(main_config, 'theme', theme, true)
+		starstore.set(main_config, starstore.qname_of('theme'), theme, true)
 	end },
 }
 
@@ -158,7 +175,7 @@ vim.diagnostic.config({
 
 
 -- vim dev
-if starstore.get_bool(main_config, 'vim_dev') then
+if starstore.get_bool(main_config, starstore.qname_of('vim_dev')) then
 	lspconfig['lua_ls'].setup {
 		capabilities = capabilities,
 		settings = {

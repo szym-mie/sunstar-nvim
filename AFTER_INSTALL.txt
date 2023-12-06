@@ -1,7 +1,7 @@
 AFTER INSTALL
 
 Check if the plugin manager has been installed correctly.
-On next Neovim boot plugin installation will be run.
+Neovim will now run plugin installation.
 
 To add your plugins, open plugins.txt.
 

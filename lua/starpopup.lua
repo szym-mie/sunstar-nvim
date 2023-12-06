@@ -12,7 +12,7 @@ local expand_dir_enum = {
 	SE = { x = -1, y = -1 },
 }
 
-starpopup.get_popup_pos = function (popup_space, n)
+function starpopup.get_popup_pos (popup_space, n)
 	-- because indexing from 1 in lua
 	local i = n - 1
 	local pos = {
@@ -27,12 +27,12 @@ starpopup.get_popup_pos = function (popup_space, n)
 	end
 end
 
-starpopup.check_clipping = function (popup_space, pos)
+function starpopup.check_clipping (popup_space, pos)
 	-- TODO add boundary check and a overflow message
 	return true
 end
 
-starpopup.create_popup_space = function (init_pos, popup_size, actions_sep_char, anchor)
+function starpopup.create_popup_space (init_pos, popup_size, actions_sep_char, anchor)
 	local step_x = expand_dir_enum[anchor].x * (popup_size.x + 1)
 	local step_y = expand_dir_enum[anchor].y * (popup_size.y + 1)
 
@@ -46,7 +46,7 @@ starpopup.create_popup_space = function (init_pos, popup_size, actions_sep_char,
 	}
 end
 
-starpopup.remove_from_popup_space = function (popup)
+function starpopup.remove_from_popup_space (popup)
 	local popup_space = popup.space
 	local is_found = false
 	for i, popup_item in ipairs(popup_space.popups) do
@@ -82,7 +82,7 @@ local function popup_on_exit_factory(popup)
 	end
 end
 
-starpopup.create_popup = function (popup_space, title, level, text, actions, actions_per_row, timeout)
+function starpopup.create_popup (popup_space, title, level, text, actions, actions_per_row, timeout)
 	local next_pos = starpopup.get_popup_pos(popup_space, #popup_space.popups + 1)
 	local popup_size = popup_space.popup_size
 	local anchor = popup_space.anchor
@@ -110,12 +110,12 @@ starpopup.create_popup = function (popup_space, title, level, text, actions, act
 	return popup
 end
 
-starpopup.move_popup = function (popup, new_pos)
+function starpopup.move_popup (popup, new_pos)
 	starwindow.resize_ui(popup.ui, new_pos, popup.size, popup.anchor)
 	popup.pos = new_pos
 end
 
-starpopup.update_popup_buffer = function (popup)
+function starpopup.update_popup_buffer (popup)
 	-- TODO try adding small text-graphics to indicate type of msg
 	local width = popup.size.x
 	local height = popup.size.y
@@ -148,12 +148,12 @@ starpopup.update_popup_buffer = function (popup)
 	starcolor.color_frag(popup_color_group, popup.level, popup.ui.buffer, 0, level_icon_pad, 3)
 end
 
-starpopup.close_popup = function (popup)
+function starpopup.close_popup (popup)
 	starwindow.close_ui(popup.ui)
 	starpopup.remove_from_popup_space(popup)
 end
 
-starpopup.setup = function (opts)
+function starpopup.setup (opts)
 	local init_pos = opts.init_pos or { x = 1, y = 3 }
 	local popup_size = opts.popup_size or { x = 40, y = 5 }
 	local actions_sep_char = opts.actions_sep_char or '|'
@@ -162,13 +162,13 @@ starpopup.setup = function (opts)
 	starpopup.main_space = starpopup.create_popup_space(init_pos, popup_size, actions_sep_char, anchor)
 end
 
-starpopup.popup = function (title, level, text, actions, actions_per_row, timeout, custom_popup_space)
+function starpopup.popup (title, level, text, actions, actions_per_row, timeout, custom_popup_space)
 	local popup_space = custom_popup_space or starpopup.main_space
 	local popup = starpopup.create_popup(popup_space, title, level, text, actions, actions_per_row, timeout)
 	table.insert(popup_space.popups, popup)
 end
 
-starpopup.action = function (opts)
+function starpopup.action (opts)
 	return {
 		key = opts.key,
 		text = opts.text,
@@ -176,7 +176,7 @@ starpopup.action = function (opts)
 	}
 end
 
-starpopup.action_dismiss = function (key)
+function starpopup.action_dismiss (key)
 	return {
 		key = key,
 		text = 'dismiss',

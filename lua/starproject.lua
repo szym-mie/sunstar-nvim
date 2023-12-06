@@ -27,7 +27,7 @@ function starproject.get_recent_projects ()
 	local store = starproject.recent_projects_store
 	local projects = {}
 	for i = 1, starproject.recent_projects_limit do
-		projects[i] = starstore.get(store, i)
+		projects[i] = starstore.get(store, starstore.qname_of(i))
 	end
 	starproject.recent_projects = projects
 end
@@ -36,7 +36,7 @@ function starproject.update_recent_projects ()
 	local store = starproject.recent_projects_store
 	local projects = starproject.recent_projects
 	for i = 1, starproject.recent_projects_limit do
-		starstore.set(store, i, projects[i])
+		starstore.set(store, starstore.qname_of(i), projects[i])
 	end
 	starstore.write(store)
 end

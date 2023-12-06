@@ -1,19 +1,20 @@
 local starcmd = {}
 
-starcmd.silent_cmd = function (cmd)
+function starcmd.silent_cmd (cmd)
 	pcall(function (vim_cmd) vim.cmd(vim_cmd) end, cmd)
 end
 
-starcmd.cmd_callback = function (run, name)
-	if type(run) == 'string' then
+function starcmd.cmd_callback (run, name)
+	local run_type = type(run)
+	if run_type == 'string' then
 		return function ()
 			starcmd.silent_cmd(run)
 		end
-	elseif type(run) == 'function' then
+	elseif run_type == 'function' then
 		return run
 	else
 		return function ()
-			vim.print('cmd \''..name..'\' cannot be executed')
+			vim.print('cmd \''..name..'\' of type '..run_type..' cannot be executed')
 		end
 	end
 end

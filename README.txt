@@ -1,23 +1,25 @@
 
 
-          ,     ,$;,$$$.    ,$$$$:.   ,$$$$. 
-         .;,    ;$$   ;$   ;$$,,$$;  ;$   ;$ 
-      '";$:""'  $$    $$   $"""""'   $$   $; 
-         ;     ,$'   ,$'   '$$$$$'   '$$$$'  
-                                        
-                 ,$                         
-     ,$$$$$.  ,$$$$$$'   ,$$$,$;   ,$;,$$;   
-    ;$$,,,      ;$'     ;$   ;$'   ;$$       
-     '""$$;     $$      $$   $$    $$        
-    '$$$$$'    ,$'      '$$$$$$.  ,$'         
-    
+          ,      ,$$$$$.  ,$;  ,$.   ,$;,$$$.
+         .;,    ;$$,,,    ;$'  ;$'   ;$$   ;$
+      '";$:""'   '""$$;   $$   $$    $$    $$
+         ;     '$$$$$'    '$$$$$$   ,$'   ,$'
 
-      a vanilla lua config for neovim
-      
+                 ,$
+     ,$$$$$.  ,$$$$$$'   ,$$$,$;   ,$;,$$;
+    ;$$,,,      ;$'     ;$   ;$'   ;$$
+     '""$$;     $$      $$   $$    $$
+    '$$$$$'    ,$'      '$$$$$$.  ,$'
+
+
+      vanilla lua config for neovim ~
+
       space-key mappings
       VCS integration
       straightforward config
 
+      [ Github ]
+      https://github.com/szym-mie/sunstar-nvim
 
     # Installation
 
@@ -28,9 +30,10 @@
       1. backup your current config, by moving it somewhere else.
       
       2. clone this repo to nvim directory:
-         git clone git@github.com:szym-mie/neostar.git <nvim-config>
+         git clone git@github.com:szym-mie/sunstar-nvim.git <nvim-config>
 
-      3. run neovim - a plugin manager will be installed.
+      3. run neovim - a plugin manager will be installed, along with the
+         default suite of plugins.
 
 
     # Features
@@ -48,17 +51,17 @@
          to ensure all plugins are up to date. it is performed 
          asynchronously, so your startup time doesn't suffer.
 
-      4. classic init file - you can now install every lsp server,
-         every plugin you want without any hassle. just edit init.lua.
+      4. classic init file - you can now install any lsp server,
+         configure any plugin you want - just edit init.lua.
 
 
     # Configuration
 
       1. you can easily install themes and other plugins, while in neovim 
          hit [Space-f-e-a] to edit file 'plugins.txt'.
-	 all new plugins will be installed at next startup.
+         all new plugins will be installed at next startup.
 
-      2. select theme by [Space-T]. it's that easy (like in original vim)
+      2. select theme interactively by [Space-T].
 
-      3. neostar config contains some specific options in a more convient
+      3. sunstar config contains some specific options in a more convient
          format. edit it by [Space-f-e-c].

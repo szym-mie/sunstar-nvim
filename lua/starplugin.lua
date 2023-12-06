@@ -8,7 +8,13 @@ local starplugin = {
 
 local starpopup = require('starpopup')
 
-local function get_plugin_item(dir)
+function starplugin.update_plugins ()
+	vim.g.plug_window = ''
+	vim.cmd([[tabe]])
+	vim.cmd([[PlugUpdate]])
+end
+
+local function get_plugin_item (dir)
 	return {
 		dir = dir,
 		done = false,
@@ -17,13 +23,7 @@ local function get_plugin_item(dir)
 	}
 end
 
-local function update_plugins()
-	vim.g.plug_window = ''
-	vim.cmd([[tabe]])
-	vim.cmd([[PlugUpdate]])
-end
-
-local function get_check_complete_popup_text(missing_count, update_count)
+local function get_check_complete_popup_text (missing_count, update_count)
 	local text = ''
 	if missing_count > 0 then
 		text = text..missing_count..' plugin/s missing'
@@ -35,7 +35,7 @@ local function get_check_complete_popup_text(missing_count, update_count)
 	return text..'. Do you want to update now?'
 end
 
-local function on_check_complete()
+local function on_check_complete ()
 	if starplugin.missing_count > 0 or starplugin.update_count > 0 then
 		local level = starplugin.missing_count > 0 and 'warn' or 'info'
 		starpopup.popup(
@@ -43,14 +43,14 @@ local function on_check_complete()
 			level,
 			get_check_complete_popup_text(starplugin.missing_count, starplugin.update_count),
 			{
-				starpopup.action { key = '<Enter>', text = 'update', run = update_plugins },
+				starpopup.action { key = '<Enter>', text = 'update', run = starplugin.update_plugins },
 				starpopup.action_dismiss('q'),
 			},
 			2)
 	end
 end
 
-local function check_for_update_job_fn(plugin_id)
+local function check_for_update_job_fn (plugin_id)
 	return function (_, data, _)
 		local plugin = starplugin.plugins[plugin_id]
 		plugin.done = true
@@ -75,7 +75,7 @@ local function check_for_update_job_fn(plugin_id)
 	end
 end
 
-local function check_for_update(plugin_id)
+local function check_for_update (plugin_id)
 	local plugin = starplugin.plugins[plugin_id]
 	local dir = plugin.dir
 
@@ -86,7 +86,7 @@ local function check_for_update(plugin_id)
 	local count_cmd = 'git -C '..dir..' rev-list HEAD..origin --count'
 
 	local fetch_job_opts = {
-		on_exit = function (_, exit_code, _)
+		on_exit = function (_, _, _)
 			vim.fn.jobstart(count_cmd, count_job_opts)
 		end
 	}
@@ -95,7 +95,7 @@ local function check_for_update(plugin_id)
 	vim.fn.jobstart(fetch_cmd, fetch_job_opts)
 end
 
-starplugin.run_update = function ()
+function starplugin.run_update ()
 	for plugin_id, plugin_info in pairs(vim.g.plugs) do
 		local dir = plugin_info.dir
 		starplugin.plugins[plugin_id] = get_plugin_item(dir)
@@ -107,26 +107,38 @@ starplugin.run_update = function ()
 	end
 end
 
-starplugin.is_installed = function ()
+function starplugin.get_plug_vim_path ()
 	local data_dir = vim.fn.stdpath('data')..'/site'
-	return vim.fn.filereadable(data_dir..'/autoload/plug.vim')
+	return data_dir..'/autoload/plug.vim'
 end
 
-starplugin.try_install = function ()
-	local data_dir = vim.fn.stdpath('data')..'/site'
-	local has_plugvim = vim.fn.filereadable(data_dir..'/autoload/plug.vim')
+function starplugin.is_installed ()
+	return vim.fn.filereadable(starplugin.get_plug_vim_path()) == 1
+end
+
+function starplugin.try_install ()
+	local plug_dir = starplugin.get_plug_vim_path()
+	local has_plugvim = vim.fn.filereadable(plug_dir)
 	if has_plugvim == 0 then
 		vim.print('Installing plugin manager now.')
+		local has_curl = vim.fn.executable('curl')
 		local url = 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-		local curl_cmd = 'curl --insecure -fLo '..data_dir..'/autoload/plug.vim --create-dirs '..url
-		local curl_job_id = vim.fn.jobstart(curl_cmd, {})
-		vim.fn.jobwait({curl_job_id})
+		local curl_cmd = 'curl --insecure -fLo '..plug_dir..' --create-dirs '..url
+		local curl_job_id = vim.fn.jobstart(curl_cmd, vim.empty_dict())
+		local curl_exit = vim.fn.jobwait({curl_job_id})[1]
+		if curl_exit ~= 0 then
+			if has_curl == 1 then
+				vim.print('[Error] curl failed with code: '..curl_exit)
+			else
+				vim.print('[Error] curl not found: install curl or install vim-plug manually')
+			end
+		end
 		return false
 	end
 	return true
 end
 
-starplugin.get_addons = function (plugin_load, filepath)
+function starplugin.get_addons (plugin_load, filepath)
 	local abs_filepath = vim.fn.stdpath('config')..'/'..(filepath or 'plugins.txt')
 	local lines = vim.fn.readfile(abs_filepath)
 	for _, line in ipairs(lines) do

@@ -27,6 +27,30 @@ local function get_in(tab, keys)
 	return curr_tab
 end
 
+local function is_illegal_qname (qname)
+	local is_illegal = string.match(qname, '[^%.a-zA-Z0-9_]') ~= nil
+	if is_illegal then error('qname \''..qname..'\' contains illegal chars') end
+end
+
+function starstore.get_qname (keys)
+	local qname = ''
+	for i, key in ipairs(keys) do
+		is_illegal_qname(key)
+		if i == 1 then
+			qname = key
+		else
+			qname = qname..'.'..key
+		end
+	end
+	return qname
+end
+
+function starstore.qname_of (qname)
+	is_illegal_qname(qname)
+	local qname_iter = string.gmatch(qname, '[^%.]+')
+	return starutil.list_from_iter(qname_iter)
+end
+
 local function flat_iter_in(tab, fn)
 	for key, val in pairs(tab) do
 		if type(val) == 'table' then
@@ -44,13 +68,12 @@ local function read_lines(lines)
 		local sep_index = string.find(line, '%s*:')
 		if sep_index ~= nil then
 			local full_key_name = string.sub(line, 1, sep_index - 1)
-			local qname_iter = string.gmatch(full_key_name, '[^%.]+')
-			local qnames = starutil.list_from_iter(qname_iter)
+			local keys = starstore.qname_of(full_key_name)
 			local rval = string.sub(line, sep_index + 1, -1)
 			local val_s, val_e = string.find(rval, '\'.*\'')
 			if val_s ~= nil then
 				local val = string.sub(rval, val_s + 1, val_e - 1)
-				assoc_in(tab, qnames, val)
+				assoc_in(tab, keys, val)
 			end
 		end
 	end
@@ -119,29 +142,13 @@ function starstore.reload (store)
 	return true
 end
 
-function starstore.get_qname (keys)
-	local qname = ''
-	for i, key in ipairs(keys) do
-		if i == 1 then
-			qname = key
-		else
-			qname = qname..'.'..key
-		end
-	end
-	return qname
-end
-
 function starstore.write (store)
 	local filepath = store.filepath
 	vim.fn.writefile(write_lines(store.items), filepath)
 end
 
 function starstore.get (store, keys)
-	if type(keys) == 'table' then
-		return get_in(store.items, keys)
-	else
-		return get_in(store.items, { tostring(keys) })
-	end
+	return get_in(store.items, keys)
 end
 
 function starstore.foreach (store, fn)
@@ -149,9 +156,10 @@ function starstore.foreach (store, fn)
 end
 
 function starstore.set (store, keys, value, reapply)
+	local qname = starstore.get_qname(keys)
 	assoc_in(store.items, keys, value)
 	if reapply and store.apply_callbacks ~= nil then
-		local apply_fn = store.apply_callbacks[starstore.get_qname(keys)]
+		local apply_fn = store.apply_callbacks[qname]
 		if apply_fn ~= nil then
 			apply_fn(value)
 		end

@@ -20,4 +20,4 @@
       straightforward config
 
       [ Github ]
-      https://github.com/szym-mie/sunstar
+      https://github.com/szym-mie/sunstar-nvim
