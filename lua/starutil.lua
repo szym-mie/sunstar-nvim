@@ -1,30 +1,30 @@
 local starutil = {}
 
-starutil.get_path_normal_form = function (path)
+function starutil.get_path_normal_form (path)
 	return string.gsub(string.gsub(path, '\\', '/'), '/$', '')
 end
 
-starutil.is_file = function (path)
+function starutil.is_file (path)
 	return vim.fn.filereadable(path) ~= 0
 end
 
-starutil.is_directory = function (path)
+function starutil.is_directory (path)
 	return vim.fn.isdirectory(path) ~= 0
 end
 
-starutil.file_directory = function (path)
+function starutil.file_directory (path)
 	return string.match(path, '([^\\/]+\\/)+')
 end
 
-starutil.file_name = function (path)
+function starutil.file_name (path)
 	return string.match(path, '([^\\/]+\\/?$)')
 end
 
-starutil.identity = function (n)
+function starutil.identity (n)
 	return n
 end
 
-starutil.list_from_iter = function (iter)
+function starutil.list_from_iter (iter)
 	local list = {}
 	for elem in iter do
 		table.insert(list, elem)

@@ -5,7 +5,7 @@ local starcolor = require('starcolor')
 
 local default_click_hl = 'TermCursor'
 
-starclick.area = function (pos, size, action, click_hl)
+function starclick.area (pos, size, action, click_hl)
 	return {
 		pos = pos,
 		size = size,
@@ -108,7 +108,7 @@ local function click_action_callback_factory(area_span_map)
 	end
 end
 
-starclick.attach_to_ui = function (ui, size, areas)
+function starclick.attach_to_ui (ui, size, areas)
 	local span_map = create_area_span_map(areas, size.x, size.y)
 	starwindow.set_key_ui(ui, 'n', '<LeftMouse>', click_action_callback_factory(span_map))
 

@@ -167,13 +167,13 @@ local function is_jobs_success(jobs_error_codes)
 	return jobs_get_error(jobs_error_codes) == nil
 end
 
-starvcs.vcs_detect = function (vcs)
+function starvcs.vcs_detect (vcs)
 	local jobs_result = vcs_exec(vcs, 'vcs_detect', {}, {})
 
 	return is_jobs_success(jobs_result)
 end
 
-starvcs.vcs_detect_save = function (vcs)
+function starvcs.vcs_detect_save (vcs)
 	local is_found = starvcs.vcs_detect(vcs)
 	if is_found then
 		starvcs.current_vcs = vcs
@@ -183,7 +183,7 @@ starvcs.vcs_detect_save = function (vcs)
 	return is_found
 end
 
-starvcs.vcs_detect_all = function ()
+function starvcs.vcs_detect_all ()
 	local found = {}
 	for _, vcs in ipairs(supported_vcs) do
 		found[vcs] = starvcs.vcs_detect(vcs)
@@ -192,7 +192,7 @@ starvcs.vcs_detect_all = function ()
 	return found
 end
 
-starvcs.vcs_detect_save_all = function ()
+function starvcs.vcs_detect_save_all ()
 	local found = {}
 	for _, vcs in ipairs(supported_vcs) do
 		found[vcs] = starvcs.vcs_detect_save(vcs)
@@ -201,7 +201,7 @@ starvcs.vcs_detect_save_all = function ()
 	return found
 end
 
-starvcs.vcs_root = function (vcs, path, on_result)
+function starvcs.vcs_root (vcs, path, on_result)
 	local job_opts = {
 		path = path,
 		on_stdout = function (_, data, _)
@@ -214,7 +214,7 @@ starvcs.vcs_root = function (vcs, path, on_result)
 	return is_jobs_success(jobs_result)
 end
 
-starvcs.get_current_vcs = function ()
+function starvcs.get_current_vcs ()
 	if starvcs.current_vcs == nil then
 		vim.print(starvcs.vcs_detect_save_all())
 	end
@@ -222,7 +222,7 @@ starvcs.get_current_vcs = function ()
 	return starvcs.current_vcs
 end
 
-starvcs.init = function (vcs, remote_url, on_out, on_err)
+function starvcs.init (vcs, remote_url, on_out, on_err)
 	local params = { remote_url = remote_url }
 	local job_opts = {
 		on_stdout = on_out,
@@ -235,7 +235,7 @@ starvcs.init = function (vcs, remote_url, on_out, on_err)
 	end
 end
 
-starvcs.add = function (files, on_out, on_err)
+function starvcs.add (files, on_out, on_err)
 	if files == nil then
 		files = '.'
 	end
@@ -252,7 +252,7 @@ starvcs.add = function (files, on_out, on_err)
 	end
 end
 
-starvcs.log = function (on_out, on_err)
+function starvcs.log (on_out, on_err)
 	local vcs = starvcs.get_current_vcs()
 	local job_opts = {
 		on_stdout = on_out,
@@ -267,7 +267,7 @@ starvcs.log = function (on_out, on_err)
 	return jobs_result
 end
 
-starvcs.status = function (on_out, on_err)
+function starvcs.status (on_out, on_err)
 	local vcs = starvcs.get_current_vcs()
 	local job_opts = {
 		on_stdout = on_out,
@@ -280,7 +280,7 @@ starvcs.status = function (on_out, on_err)
 	end
 end
 
-starvcs.commit = function (msg, on_out, on_err)
+function starvcs.commit (msg, on_out, on_err)
 	local vcs = starvcs.get_current_vcs()
 	local params = { msg = msg }
 	local job_opts = {
@@ -294,7 +294,7 @@ starvcs.commit = function (msg, on_out, on_err)
 	end
 end
 
-starvcs.update_remote = function (branch, on_out, on_err)
+function starvcs.update_remote (branch, on_out, on_err)
 	if branch == nil then
 		branch = ''
 	end
@@ -311,13 +311,13 @@ starvcs.update_remote = function (branch, on_out, on_err)
 	end
 end
 
-starvcs.fast_commit = function (msg, on_out, on_err)
+function starvcs.fast_commit (msg, on_out, on_err)
 	starvcs.add(nil, on_out, on_err)
 	starvcs.commit(msg, on_out, on_err)
 	starvcs.update_remote(nil, on_out, on_err)
 end
 
-starvcs.update_local = function (on_out, on_err)
+function starvcs.update_local (on_out, on_err)
 	local vcs = starvcs.get_current_vcs()
 	local job_opts = {
 		on_stdout = on_out,
@@ -330,7 +330,7 @@ starvcs.update_local = function (on_out, on_err)
 	end
 end
 
-starvcs.reset = function (on_out, on_err)
+function starvcs.reset (on_out, on_err)
 	local vcs = starvcs.get_current_vcs()
 	local job_opts = {
 		on_stdout = on_out,
@@ -343,7 +343,7 @@ starvcs.reset = function (on_out, on_err)
 	end
 end
 
-starvcs.switch_branch = function (branch, on_out, on_err)
+function starvcs.switch_branch (branch, on_out, on_err)
 	local vcs = starvcs.get_current_vcs()
 	local params = { branch = branch }
 	local job_opts = {
@@ -357,7 +357,7 @@ starvcs.switch_branch = function (branch, on_out, on_err)
 	end
 end
 
-starvcs.list_branches = function (on_out, on_err)
+function starvcs.list_branches (on_out, on_err)
 	local vcs = starvcs.get_current_vcs()
 	local params = {}
 	local job_opts = {
@@ -371,7 +371,7 @@ starvcs.list_branches = function (on_out, on_err)
 	end
 end
 
-starvcs.switch_vcs_item_name = function (vcs)
+function starvcs.switch_vcs_item_name (vcs)
 	return function ()
 		local is_detected = starvcs.vcs_detect_save(vcs)
 		local option_name = (is_detected and 'switch to ' or 'init ')..vcs
@@ -382,7 +382,7 @@ starvcs.switch_vcs_item_name = function (vcs)
 	end
 end
 
-starvcs.switch_vcs_cmd = function (vcs)
+function starvcs.switch_vcs_cmd (vcs)
 	return function ()
 		local is_detected = starvcs.vcs_detect_save(vcs)
 		if is_detected then
@@ -394,14 +394,14 @@ starvcs.switch_vcs_cmd = function (vcs)
 	end
 end
 
-starvcs.switch_branch_cmd = function ()
+function starvcs.switch_branch_cmd ()
 	-- TOOD temporary way of switching
 	starvcs.switch_branch_window()
 	local branch = vim.fn.input('branch: ', '')
 	starvcs.branch(branch)
 end
 
-starvcs.create_window = function (data_source, modify_data_fn, post_create_ui_fn, on_event_fn_map)
+function starvcs.create_window (data_source, modify_data_fn, post_create_ui_fn, on_event_fn_map)
 	local height = starvcs.ui_conf.rows[data_source] or starvcs.ui_conf.fallback_rows
 
 	local function create_window_ui(data)
@@ -456,11 +456,11 @@ starvcs.create_window = function (data_source, modify_data_fn, post_create_ui_fn
 
 end
 
-starvcs.add_window_cmd = function ()
+function starvcs.add_window_cmd ()
 	-- TODO
 end
 
-starvcs.log_window_cmd = function ()
+function starvcs.log_window_cmd ()
 	starvcs.create_window('log', nil, function (ui, lines)
 		for i, line in ipairs(lines) do
 			if string.match(line, '^commit') then
@@ -496,11 +496,11 @@ local function status_highlight(ui, lines)
 	end
 end
 
-starvcs.status_window_cmd = function ()
+function starvcs.status_window_cmd ()
 	starvcs.create_window('status', nil, status_highlight)
 end
 
-starvcs.commit_window_cmd = function ()
+function starvcs.commit_window_cmd ()
 	local function on_commit_fn_factory(buffer)
 		return function ()
 			local lines = vim.api.nvim_buf_get_lines(buffer, 0, -1, false)
@@ -522,7 +522,7 @@ starvcs.commit_window_cmd = function ()
 		end)
 end
 
-starvcs.switch_branch_window = function ()
+function starvcs.switch_branch_window ()
 	starvcs.create_window('list_branches', function (line)
 		return string.gsub(line, '^%*', '-')
 	end, function (ui, lines)
@@ -542,7 +542,7 @@ local default_rows = {
 	list_branches = 8,
 }
 
-starvcs.setup = function (opts)
+function starvcs.setup (opts)
 	starvcs.ui_conf = {}
 	starvcs.ui_conf.height = opts.height or 4
 	starvcs.ui_conf.width_pad = opts.width_pad or 8

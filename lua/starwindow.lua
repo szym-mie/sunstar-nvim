@@ -16,7 +16,7 @@ local pos_anchor_enum = {
 	SE = { x = 1, y = 1 },
 }
 
-starwindow.resolve_pos = function (pos, anchor)
+function starwindow.resolve_pos (pos, anchor)
 	if anchor == nil then
 		return pos
 	end
@@ -29,15 +29,15 @@ starwindow.resolve_pos = function (pos, anchor)
 	return { x = new_x, y = new_y }
 end
 
-starwindow.replace_with_string = function(s, ns, p, l)
+function starwindow.replace_with_string (s, ns, p, l)
 	return string.sub(s, 1, p-1) .. string.sub(ns, 1, l) .. string.sub(s, p+l)
 end
 
-starwindow.set_title = function (ui, title)
+function starwindow.set_title (ui, title)
 	vim.api.nvim_win_set_config(ui.window, { title = ' '..title..' ', title_pos = 'center' })
 end
 
-starwindow.update_menu_buffer = function(buffer, width, width_pad, height, columns, entries)
+function starwindow.update_menu_buffer (buffer, width, width_pad, height, columns, entries)
 	local rows = {}
 	for i = 1, height do
 		rows[i] = string.rep(' ', width)
@@ -59,7 +59,7 @@ starwindow.update_menu_buffer = function(buffer, width, width_pad, height, colum
 	vim.api.nvim_buf_set_lines(buffer, 0, -1, true, rows)
 end
 
-starwindow.update_text_buffer = function (buffer, text, break_lines)
+function starwindow.update_text_buffer (buffer, text, break_lines)
 	if type(text) == 'string' then
 		local lines = {}
 		if break_lines == true then
@@ -75,7 +75,7 @@ starwindow.update_text_buffer = function (buffer, text, break_lines)
 	end
 end
 
-starwindow.create_ui = function (window_pos, window_size, border, anchor, zindex)
+function starwindow.create_ui (window_pos, window_size, border, anchor, zindex)
 	local buffer = vim.api.nvim_create_buf(false, true)
 	local real_pos = starwindow.resolve_pos(window_pos, anchor)
 	local window_config = {
@@ -98,7 +98,7 @@ starwindow.create_ui = function (window_pos, window_size, border, anchor, zindex
 	}
 end
 
-starwindow.resize_ui = function (ui, window_pos, window_size, anchor)
+function starwindow.resize_ui (ui, window_pos, window_size, anchor)
 	local real_pos = starwindow.resolve_pos(window_pos, anchor)
 	local window_config = {
 		relative = 'win',
@@ -113,7 +113,7 @@ starwindow.resize_ui = function (ui, window_pos, window_size, anchor)
 	ui.window_size = window_size
 end
 
-starwindow.set_ui = function (ui, window_pos, window_size, border, anchor, zindex)
+function starwindow.set_ui (ui, window_pos, window_size, border, anchor, zindex)
 	if ui == nil or not vim.api.nvim_win_is_valid(ui.window) then
 		ui = starwindow.create_ui(window_pos, window_size, border, anchor, zindex)
 	else
@@ -122,47 +122,47 @@ starwindow.set_ui = function (ui, window_pos, window_size, border, anchor, zinde
 	return ui
 end
 
-starwindow.set_pane_ui = function (ui, window_height, parent_size, border, zindex)
+function starwindow.set_pane_ui (ui, window_height, parent_size, border, zindex)
 	local window_pos = { x = 0, y = parent_size.y - window_height }
 	local window_size = { x = parent_size.x, y = window_height }
 	return starwindow.set_ui(ui, window_pos, window_size, border, nil, zindex)
 end
 
-starwindow.set_key_ui = function (ui, mode, key, fn)
+function starwindow.set_key_ui (ui, mode, key, fn)
 	pcall(vim.api.nvim_buf_del_keymap, ui.buffer, mode, key)
 	vim.api.nvim_buf_set_keymap(ui.buffer, mode, key, '', { callback = fn })
 end
 
-starwindow.set_on_event = function (ui, events, on_event_fn)
+function starwindow.set_on_event (ui, events, on_event_fn)
 	vim.api.nvim_create_autocmd(events, {
 		buffer = ui.buffer,
 		callback = on_event_fn,
 	})
 end
 
-starwindow.focus_ui = function (ui)
+function starwindow.focus_ui (ui)
 	vim.api.nvim_set_current_win(ui.window)
 end
 
-starwindow.close_ui = function (ui)
+function starwindow.close_ui (ui)
 	vim.api.nvim_win_close(ui.window, true)
 	vim.api.nvim_buf_delete(ui.buffer, { force = true })
 end
 
-starwindow.hide_ui = function (obj)
+function starwindow.hide_ui (obj)
 	if obj.ui ~= nil then
 		starwindow.close_ui(obj.ui)
 		obj.ui = nil
 	end
 end
 
-starwindow.hide_ui_callback = function (obj)
+function starwindow.hide_ui_callback (obj)
 	return function (_)
 		starwindow.hide_ui(obj)
 	end
 end
 
-starwindow.text_break = function (text, width, pad_width)
+function starwindow.text_break (text, width, pad_width)
 	if pad_width == nil then
 		pad_width = 0
 	end
@@ -196,14 +196,14 @@ starwindow.text_break = function (text, width, pad_width)
 	return lines
 end
 
-starwindow.trim_string_to_len = function (str, max_len, more_str)
+function starwindow.trim_string_to_len (str, max_len, more_str)
 	if #str > max_len then
 		return string.sub(1, max_len - #more_str)..more_str
 	end
 	return str
 end
 
-starwindow.trim_pad_string_to_len = function (str, len, more_str, pad_char)
+function starwindow.trim_pad_string_to_len (str, len, more_str, pad_char)
 	if #str > len then
 		return string.sub(str, 1, len - #more_str)..more_str
 	end
@@ -214,7 +214,7 @@ starwindow.trim_pad_string_to_len = function (str, len, more_str, pad_char)
 	return string.rep(pad_char, pad_width)..str..string.rep(pad_char, pad_width + odd_width_rest)
 end
 
-starwindow.join_string_lines = function (lines)
+function starwindow.join_string_lines (lines)
 	local str = ''
 	for _, line in ipairs(lines) do
 		str = str..line..'\n'
@@ -222,7 +222,7 @@ starwindow.join_string_lines = function (lines)
 	return str
 end
 
-starwindow.join_action_items = function (items, item_width, sep_char)
+function starwindow.join_action_items (items, item_width, sep_char)
 	local buf = ''
 	for i, item in ipairs(items) do
 		-- include one-space padding
@@ -237,7 +237,7 @@ starwindow.join_action_items = function (items, item_width, sep_char)
 	return buf
 end
 
-starwindow.get_actions_maps = function (actions, width, actions_per_row, actions_sep_char)
+function starwindow.get_actions_maps (actions, width, actions_per_row, actions_sep_char)
 	-- TODO add areas for mouse clicking
 	-- with accounting of separator chars
 	local final_width = width - actions_per_row
@@ -265,7 +265,7 @@ starwindow.get_actions_maps = function (actions, width, actions_per_row, actions
 	}
 end
 
-starwindow.set_actions_keymaps = function (actions, ui, on_exit_fn)
+function starwindow.set_actions_keymaps (actions, ui, on_exit_fn)
 	for _, action in ipairs(actions) do
 		local cmd_fn = starcmd.cmd_callback(action.run, action.text)
 		starwindow.set_key_ui(ui, 'n', action.key, function ()

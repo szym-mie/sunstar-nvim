@@ -221,7 +221,7 @@ local function create_keytree(items)
 	return tree
 end
 
-starkeys.group = function (opts)
+function starkeys.group (opts)
 	return {
 		type_group = true,
 		group_path = opts.path,
@@ -229,7 +229,7 @@ starkeys.group = function (opts)
 	}
 end
 
-starkeys.cmd = function (opts)
+function starkeys.cmd (opts)
 	return {
 		type_cmd = true,
 		cmd_path = opts.path,
@@ -239,17 +239,17 @@ starkeys.cmd = function (opts)
 	}
 end
 
-starkeys.open = function (file)
+function starkeys.open (file)
 	return function ()
 		vim.cmd.tabe(file)
 	end
 end
 
-starkeys.lateinit = function ()
+function starkeys.lateinit ()
 	vim.print('Lateinit - action not assigned')
 end
 
-starkeys.todo = function ()
+function starkeys.todo ()
 	vim.print('TODO - keystreak not functional')
 end
 
@@ -312,7 +312,7 @@ local keys_preset = {
 	starkeys.cmd { path = 'n', name = 'clear highlight', run = ':noh' }
 }
 
-starkeys.get_ui_height = function (entries)
+function starkeys.get_ui_height (entries)
 	local height = math.ceil(#entries / starkeys.ui_conf.columns)
 	if height == 0 then
 		return 1
@@ -320,14 +320,14 @@ starkeys.get_ui_height = function (entries)
 	return height
 end
 
-starkeys.update_ui_wait = function ()
+function starkeys.update_ui_wait ()
 	local parent_size = starwindow.get_screen_size()
 	local border = starkeys.ui_conf.border
 	starkeys.ui = starwindow.set_pane_ui(starkeys.ui, 1, parent_size, border, 300)
 	starwindow.update_text_buffer(starkeys.ui.buffer, { ' Please wait ' }, false)
 end
 
-starkeys.update_ui_items = function (entries)
+function starkeys.update_ui_items (entries)
 	local parent_size = starwindow.get_screen_size()
 	local columns = starkeys.ui_conf.columns
 	local width_pad = starkeys.ui_conf.width_pad
@@ -338,7 +338,7 @@ starkeys.update_ui_items = function (entries)
 	starwindow.update_menu_buffer(starkeys.ui.buffer, inner_width, width_pad, height, columns, entries)
 end
 
-starkeys.display_message_ui = function (message, timeout)
+function starkeys.display_message_ui (message, timeout)
 	local parent_size = starwindow.get_screen_size()
 	local border = starkeys.ui_conf.border
 	starkeys.ui = starwindow.set_pane_ui(starkeys.ui, 1, parent_size, border, 300)
@@ -350,12 +350,12 @@ starkeys.display_message_ui = function (message, timeout)
 	end
 end
 
-starkeys.show_ui = function (group)
+function starkeys.show_ui (group)
 	starkeys.update_ui_wait()
 	starkeys.update_ui_items(get_group_items(group))
 end
 
-starkeys.setup = function (opts)
+function starkeys.setup (opts)
 	if opts.keys == nil then
 		starkeys.keylist = keys_preset
 	elseif opts.add_preset then
@@ -382,7 +382,7 @@ starkeys.setup = function (opts)
 	starkeys.ui_conf.border = opts.border or 'rounded'
 end
 
-starkeys.add_keys = function (keys)
+function starkeys.add_keys (keys)
 	for _, v in ipairs(keys) do
 		table.insert(starkeys.keylist, v)
 	end
