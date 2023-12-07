@@ -85,14 +85,17 @@ function starproject.new (opts)
 	}
 end
 
+-- TODO
 local function new_project_store (project)
 	return starstore.new({
-		filepath = project.path
+		filepath = project.path,
 	})
 end
 
+-- TODO
 local function update_project_store (project, store)
-	-- TODO
+	starstore.set(store, { 'files' }, project.files, false)
+	starstore.set(store, { 'tasks' }, project.tasks, false)
 end
 
 function starproject.create_project (path)

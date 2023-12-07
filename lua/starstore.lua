@@ -38,15 +38,19 @@ local function add_key (keys, key)
 	return new_keys
 end
 
-local function flat_iter_in (obj, fn)
+local function _flat_iter_in (obj, pre_key, fn)
 	for key, val in pairs(obj) do
+		local full_key = add_key(pre_key, key)
 		if type(val) == 'table' then
-			local pre_key_fn = function (k, v) fn(add_key(key, k), v) end
-			flat_iter_in(val, pre_key_fn)
+			_flat_iter_in(val, full_key, fn)
 		else
-			fn(key, val)
+			fn(full_key, val)
 		end
 	end
+end
+
+local function flat_iter_in (obj, fn)
+	_flat_iter_in(obj, {}, fn)
 end
 
 local function merge_in (obj1, obj2)
