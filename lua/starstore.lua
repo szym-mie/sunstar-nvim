@@ -4,27 +4,57 @@ local starstore = {
 
 local starutil = require('starutil')
 
-local function assoc_in(tab, keys, val)
-	local curr_tab = tab
+local function assoc_in (obj, keys, val)
+	local curr_obj = obj
 	local val_key = table.remove(keys, #keys)
 	for _, key in ipairs(keys) do
-		if curr_tab[key] == nil then
-			curr_tab[key] = {}
+		if curr_obj[key] == nil then
+			curr_obj[key] = {}
 		end
-		curr_tab = curr_tab[key]
+		curr_obj = curr_obj[key]
 	end
-	curr_tab[val_key] = val
+	curr_obj[val_key] = val
 end
 
-local function get_in(tab, keys)
-	local curr_tab = tab
+local function get_in (obj, keys)
+	local curr_obj = obj
 	for _, key in ipairs(keys) do
-		if curr_tab == nil then
+		if curr_obj == nil then
 			return nil
 		end
-		curr_tab = curr_tab[key]
+		curr_obj = curr_obj[key]
 	end
-	return curr_tab
+	return curr_obj
+end
+
+local function add_key (keys, key)
+	local new_keys = {}
+	local i = 1
+	for _, prev_key in ipairs(keys) do
+		new_keys[i] = prev_key
+		i = i + 1
+	end
+	new_keys[i] = key
+	return new_keys
+end
+
+local function flat_iter_in (obj, fn)
+	for key, val in pairs(obj) do
+		if type(val) == 'table' then
+			local pre_key_fn = function (k, v) fn(add_key(key, k), v) end
+			flat_iter_in(val, pre_key_fn)
+		else
+			fn(key, val)
+		end
+	end
+end
+
+local function merge_in (obj1, obj2)
+	local obj = {}
+	local assoc_in_obj = function (k, v) assoc_in(obj, k, v) end
+	flat_iter_in(obj1, assoc_in_obj)
+	flat_iter_in(obj2, assoc_in_obj)
+	return obj
 end
 
 local function is_illegal_qname (qname)
@@ -51,19 +81,8 @@ function starstore.qname_of (qname)
 	return starutil.list_from_iter(qname_iter)
 end
 
-local function flat_iter_in(tab, fn)
-	for key, val in pairs(tab) do
-		if type(val) == 'table' then
-			local pre_key_fn = function (k, v) fn(key..'.'..k, v) end
-			flat_iter_in(val, pre_key_fn)
-		else
-			fn(key, val)
-		end
-	end
-end
-
-local function read_lines(lines)
-	local tab = {}
+local function read_lines (lines)
+	local obj = {}
 	for _, line in ipairs(lines) do
 		local sep_index = string.find(line, '%s*:')
 		if sep_index ~= nil then
@@ -73,32 +92,35 @@ local function read_lines(lines)
 			local val_s, val_e = string.find(rval, '\'.*\'')
 			if val_s ~= nil then
 				local val = string.sub(rval, val_s + 1, val_e - 1)
-				assoc_in(tab, keys, val)
+				assoc_in(obj, keys, val)
 			end
 		end
 	end
-	return tab
+	return obj
 end
 
-local function write_lines(tab)
+local function write_lines (obj, prev_lines)
+	local prev_obj = read_lines(prev_lines)
+	local merge_obj = merge_in(prev_obj, obj)
 	local lines = {}
-	flat_iter_in(tab, function (k, v)
-		table.insert(lines, k..': \''..v..'\'')
+	flat_iter_in(merge_obj, function (k, v)
+		local qk = starstore.get_qname(k)
+		table.insert(lines, qk..': \''..v..'\'')
 	end)
 	return lines
 end
 
-local function read_apply(lines, apply_callbacks)
-	local store = read_lines(lines)
+local function read_apply (lines, apply_callbacks)
+	local obj = read_lines(lines)
 	if apply_callbacks ~= nil then
-		for key, value in pairs(store) do
+		for key, value in pairs(obj) do
 			local apply_fn = apply_callbacks[key]
 			if apply_fn ~= nil then
 				pcall(apply_fn, value)
 			end
 		end
 	end
-	return store
+	return obj
 end
 
 function starstore.setup (_)
@@ -128,23 +150,36 @@ function starstore.in_config_path (filename)
 	return vim.fn.stdpath('config')..'/'..filename
 end
 
-function starstore.reload (store)
+local function try_read_store (store)
 	local filepath = store.filepath
 	if not starutil.is_file(filepath) then
-		return false
+		return nil
 	end
-	local lines = vim.fn.readfile(filepath)
-	if lines then
+	return vim.fn.readfile(filepath)
+end
+
+local function try_write_store (store, obj)
+	local filepath = store.filepath
+	vim.fn.writefile(obj, filepath)
+end
+
+function starstore.reload (store)
+	local lines = try_read_store(store)
+	if lines ~= nil then
 		store.items = read_apply(lines, store.apply_callbacks)
-	else
-		store.items = {}
+		return true
 	end
-	return true
+	store.items = {}
+	return false
 end
 
 function starstore.write (store)
-	local filepath = store.filepath
-	vim.fn.writefile(write_lines(store.items), filepath)
+	local lines = try_read_store(store) or {}
+	try_write_store(store, write_lines(store.items, lines))
+end
+
+function starstore.overwrite (store)
+	try_write_store(store, write_lines(store.items, {}))
 end
 
 function starstore.get (store, keys)

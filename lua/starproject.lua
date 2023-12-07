@@ -85,33 +85,28 @@ function starproject.new (opts)
 	}
 end
 
-local function get_project_store (project)
+local function new_project_store (project)
 	return starstore.new({
 		filepath = project.path
 	})
 end
 
 local function update_project_store (project, store)
-	
+	-- TODO
 end
 
 function starproject.create_project (path)
 	local project = starproject.new({ path = path })
-	local store = get_project_store(project)
+	local store = new_project_store(project)
 end
 
 function starproject.open_project ()
-	
+	 
 end
 
 function starproject.save_project ()
 	
 end
-
-local project_file_entries = {
---	files = ,
---	tasks = ,
-}
 
 function starproject.read_project_file ()
 	
