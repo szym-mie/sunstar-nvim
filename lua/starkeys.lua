@@ -4,7 +4,11 @@ starkeys.last_streak = nil
 
 local starcmd = require("starcmd")
 local starwindow = require('starwindow')
+local starutil = require('starutil')
 local starvcs = require('starvcs')
+local starplugin = require('starplugin')
+local starproject = require('starproject')
+
 
 local function starkey_key(keystreak)
 	return '<Space>'..keystreak
@@ -127,10 +131,6 @@ local function add_group(group, new_group, path)
 		else
 			group[key].group_name = new_group.group_name
 		end
-
-		-- set_starkey('n', new_group.group_path, function ()
-		--	vim.print(group[key].group)
-		-- end)
 	end
 end
 
@@ -249,11 +249,22 @@ function starkeys.lateinit ()
 	vim.print('Lateinit - action not assigned')
 end
 
+function starkeys.with_current_path (cmd)
+	return function ()
+		local directory = starutil.file_directory(vim.fn.expand('%:p'))
+		if directory ~= nil then
+			cmd(directory)
+		end
+	end
+end
+
 function starkeys.todo ()
 	vim.print('TODO - keystreak not functional')
 end
 
 local keys_preset = {
+	starkeys.cmd { path = ',', name = 'prev tab', run = 'tabprevious', opts = { silent = true } },
+	starkeys.cmd { path = '.', name = 'next tab', run = 'tabnext', opts = { silent = true } },
 	starkeys.cmd { path = '1', name = 'to tab 1', run = '1tabn', opts = { silent = true } },
 	starkeys.cmd { path = '2', name = 'to tab 2', run = '2tabn', opts = { silent = true } },
 	starkeys.cmd { path = '3', name = 'to tab 3', run = '3tabn', opts = { silent = true } },
@@ -265,6 +276,7 @@ local keys_preset = {
 	starkeys.cmd { path = '9', name = 'to tab 9', run = '9tabn', opts = { silent = true } },
 	starkeys.cmd { path = 's', name = 'save this file', run = ':w' },
 	starkeys.cmd { path = 'S', name = 'save all', run = ':wa' },
+	starkeys.cmd { path = 'U', name = 'check updates', run = starplugin.run_update },
 	starkeys.cmd { path = 'o', name = 'open a file', run = function ()
 		local filename = vim.fn.input('filename: ', '', 'file')
 		vim.print('')
@@ -273,28 +285,28 @@ local keys_preset = {
 		end
 		vim.cmd.tabe(filename)
 	end },
+
 	starkeys.group { path = 't', name = 'Tabs' },
 	starkeys.cmd { path = 'tc', name = 'save and close this tab', run = ':wq' },
 	starkeys.cmd { path = 'tD', name = 'discard and close this tab', run = ':q!' },
+
 	starkeys.group { path = 'q', name = 'Quit' },
 	starkeys.cmd { path = 'qq', name = 'save all and exit', run = ':wqa' },
 	starkeys.cmd { path = 'qw', name = 'quit window', run = ':q' },
 	starkeys.cmd { path = 'qD', name = 'discard and exit', run = ':qa!' },
+
 	starkeys.group { path = 'f', name = 'Files' },
-	starkeys.cmd { path = 'fd', name = 'explore current dir', run = function ()
-		local filepath = string.gsub(vim.fn.expand('%:p'), '\\', '/')
-		local dir = string.match(filepath, '.*/')
-		if dir ~= nil then
-			vim.cmd.tabe(dir)
-		end
-	end },
+	starkeys.cmd { path = 'fd', name = 'explore current dir', run = starkeys.with_current_path(vim.cmd.tabe) },
+
 	starkeys.group { path = 'fe', name = 'Editor' },
 	starkeys.cmd { path = 'fed', name = 'open directory', run = starkeys.open(vim.fn.stdpath('config')) },
 	starkeys.cmd { path = 'fel', name = 'open lua directory', run = starkeys.open(vim.fn.stdpath('config')..'/lua') },
 	starkeys.cmd { path = 'fei', name = 'open init.lua', run = starkeys.open(vim.fn.stdpath('config')..'/init.lua') },
 	starkeys.cmd { path = 'fea', name = 'open addon list', run = starkeys.open(vim.fn.stdpath('config')..'/plugins.txt') },
 	starkeys.cmd { path = 'fec', name = 'open config', run = starkeys.open(vim.fn.stdpath('config')..'/config.txt') },
+
 	starkeys.group { path = 'v', name = 'VCS' },
+
 	starkeys.group { path = 'vS', name = 'Switch VCS' },
 	starkeys.cmd { path = 'vSg', name = starvcs.switch_vcs_item_name('git'), run = starvcs.switch_vcs_cmd('git') },
 	starkeys.cmd { path = 'vSs', name = starvcs.switch_vcs_item_name('svn'), run = starvcs.switch_vcs_cmd('svn') },
@@ -309,6 +321,12 @@ local keys_preset = {
 	starkeys.cmd { path = 'vb', name = 'branch', run = starvcs.switch_branch_cmd },
 	starkeys.cmd { path = 'vt', name = 'stash', run = starkeys.lateinit },
 	starkeys.cmd { path = 'vT', name = 'retrieve stash', run = starkeys.lateinit },
+
+	starkeys.group { path = 'p', name = 'Project' },
+	starkeys.cmd { path = 'po', name = 'open project', run = starkeys.with_current_path(starproject.open_project) },
+	starkeys.cmd { path = 'pc', name = 'create project', run = starkeys.with_current_path(starproject.create_project) },
+	starkeys.cmd { path = 'ps', name = 'save project', run = starkeys.with_current_path(starproject.save_project) },
+
 	starkeys.cmd { path = 'n', name = 'clear highlight', run = ':noh' }
 }
 

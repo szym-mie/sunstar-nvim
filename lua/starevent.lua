@@ -1,13 +1,56 @@
--- A complete framework, allowing to react to events such as saves, tab
--- & buffer changes, and notably other star-system events - sort of as a 
--- message bus.
+---A complete framework, allowing to react to events such as saves, tab
+---& buffer changes, and notably other star-system events - sort of as a 
+---message bus.
+
 local starevent = {
 	channels = {}
 }
 
 local vim_events = {
+	'BufAdd',
+	'BufDelete',
+	'BufEnter',
+	'BufFilePost',
+	'BufFilePre',
+	'BufHidden',
+	'BufLeave',
+	'BufModifiedSet',
+	'BufNew',
+	'BufNewFile',
+	'BufRead',
+	'BufReadPost',
+	'BufReadCmd',
+	'BufReadPre',
+	'BufUnload',
+	'BufWinEnter',
+	'BufWinLeave',
+	'BufWipeout',
+	'BufWrite',
+	'BufWritePre',
+	'BufWriteCmd',
+	'BufWritePost',
+	'ChanInfo',
+	'ChanOpen',
+	'CmdUndefined',
+	'CmdlineEnter',
+	'CmdlineLeave',
+	'CmdwinEnter',
+	'CmdwinLeave',
+	'ColorScheme',
+	'ColorSchemePre',
+	'CompleteChanged',
+	'CompleteDonePre',
+	'CompleteDone',
+	'CursorHold',
 	-- TODO
 }
+
+---@class Message
+---@field type string
+---@field about string
+---@field payload ?string
+---@field where ?string
+---@field reason ?string
 
 function starevent.add_channel (id, owner)
 	local channel = {
@@ -33,11 +76,18 @@ function starevent.get_channel (id)
 end
 
 local function notify (channel, msg)
-	for _, obs_msg_fn in ipairs(channel.observers) do
-		obs_msg_fn(msg)
+	for _, observer in ipairs(channel.observers) do
+		-- TODO implement better filters
+		if observer.filter == nil or observer.filter[msg.about] ~= nil then
+			observer.msg_fn(msg)
+		end
 	end
 end
 
+---Primitive method for broadcasting message on channel of ID
+---@param id string channel ID
+---@param msg Message message to send
+---@return boolean was_sent has the message been sent
 function starevent.push_message (id, msg)
 	if starevent.has_channel(id) then
 		local channel = starevent.get_channel(id)
@@ -49,18 +99,30 @@ function starevent.push_message (id, msg)
 	return false
 end
 
-function starevent.message (id, from, payload)
+---Send an information to a channel referenced by ID 
+---@param id string channel ID
+---@param about string topic of this info
+---@param payload any
+---@return boolean was_sent has the message been sent
+function starevent.info (id, about, payload)
 	local msg = {
-		type = 'msg',
-		from = from,
+		type = 'info',
+		about = about,
 		payload = payload
 	}
 	return starevent.push_message(id, msg)
 end
 
-function starevent.error (id, where, reason)
+---Send a warning to a channel referenced by ID
+---@param id string channel ID
+---@param about string topic of this warning
+---@param where any function, line of this warning
+---@param reason string reason for the warning
+---@return boolean was_sent has the message been sent
+function starevent.warn (id, about, where, reason)
 	local msg = {
-		type = 'err',
+		type = 'warn',
+		about = about,
 		where = where,
 		reason = reason
 	}
@@ -75,15 +137,19 @@ function starevent.set_event_source (id, event)
 				buffer = ev.buf,
 				file = ev.file
 			}
-			starevent.message(id, ev_payload)
+			starevent.info(id, event, ev_payload)
 		end
 	})
 end
 
-function starevent.observe (id, msg_fn)
+function starevent.observe (id, msg_fn, filter)
 	if starevent.has_channel(id) then
 		local channel = starevent.get_channel(id)
-		table.insert(channel.observers, msg_fn)
+		local observer = {
+			msg_fn = msg_fn,
+			filter = filter
+		}
+		table.insert(channel.observers, observer)
 		return true
 	end
 	return false
@@ -92,8 +158,8 @@ end
 function starevent.unobserve (id, msg_fn)
 	if starevent.has_channel(id) then
 		local channel = starevent.get_channel(id)
-		for i, obs_msg_fn in ipairs(channel.observers) do
-			if obs_msg_fn == msg_fn then
+		for i, observer in ipairs(channel.observers) do
+			if observer.msg_fn == msg_fn then
 				table.remove(channel, i)
 				return true
 			end

@@ -1,7 +1,7 @@
 local starclick = {}
 
 local starwindow = require('starwindow')
-local starcolor = require('starcolor')
+local starcolor = require('lua.starstyle')
 
 local default_click_hl = 'TermCursor'
 

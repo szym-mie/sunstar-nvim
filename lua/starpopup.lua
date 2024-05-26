@@ -3,7 +3,7 @@ local starpopup = {
 }
 
 local starwindow = require('starwindow')
-local starcolor = require('starcolor')
+local starstyle = require('starstyle')
 
 local expand_dir_enum = {
 	NW = { x =  1, y =  1 },
@@ -74,7 +74,7 @@ local popup_hl_spec_enum = {
 	error = { fg = '#fcd4d4', bg = '#a81717' },
 }
 
-local popup_color_group = starcolor.text_color_group('popup_hl', popup_hl_spec_enum)
+local popup_color_group = starstyle.style_group('popup_hl', popup_hl_spec_enum)
 
 local function popup_on_exit_factory(popup)
 	return function ()
@@ -145,7 +145,7 @@ function starpopup.update_popup_buffer (popup)
 	end
 
 	starwindow.update_text_buffer(popup.ui.buffer, lines)
-	starcolor.color_frag(popup_color_group, popup.level, popup.ui.buffer, 0, level_icon_pad, 3)
+	starstyle.color_frag(popup_color_group, popup.level, popup.ui.buffer, 0, level_icon_pad, 3)
 end
 
 function starpopup.close_popup (popup)

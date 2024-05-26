@@ -5,7 +5,7 @@ local starvcs = {
 }
 
 local starwindow = require('starwindow')
-local starcolor = require('starcolor')
+local starstyle = require('starstyle')
 local starutil = require('starutil')
 local oil = require('oil')
 
@@ -464,7 +464,7 @@ function starvcs.log_window_cmd ()
 	starvcs.create_window('log', nil, function (ui, lines)
 		for i, line in ipairs(lines) do
 			if string.match(line, '^commit') then
-				starcolor.color_line(nil, 'Special', ui.buffer, i - 1)
+				starstyle.color_line(nil, 'Special', ui.buffer, i - 1)
 			end
 		end
 	end)
@@ -485,12 +485,12 @@ local function status_highlight(ui, lines)
 			vim.print(s1)
 			vim.print(s2)
 			if s1 == ' ' or item_status == '??' then
-				starcolor.color_frag(nil, 'Exception', ui.buffer, i - 1, 0, 2)
+				starstyle.color_frag(nil, 'Exception', ui.buffer, i - 1, 0, 2)
 			elseif item_status == '!!' then
-				starcolor.color_frag(nil, 'Comment', ui.buffer, i - 1, 0, 2)
+				starstyle.color_frag(nil, 'Comment', ui.buffer, i - 1, 0, 2)
 			else
 				local color_group = status_highlight_colors[s1]
-				starcolor.color_frag(nil, color_group, ui.buffer, i - 1, 0, 2)
+				starstyle.color_frag(nil, color_group, ui.buffer, i - 1, 0, 2)
 			end
 		end
 	end
@@ -517,7 +517,7 @@ function starvcs.commit_window_cmd ()
 		function () return {'# Enter commit message, press [Enter] to commit'} end,
 		nil,
 		function (ui, _)
-			starcolor.color_line(nil, 'Comment', ui.buffer, 0)
+			starstyle.color_line(nil, 'Comment', ui.buffer, 0)
 			starwindow.set_key_ui(ui, 'n', '<Enter>', on_commit_fn_factory(ui.buffer))
 		end)
 end
@@ -528,7 +528,7 @@ function starvcs.switch_branch_window ()
 	end, function (ui, lines)
 		for i, line in ipairs(lines) do
 			if string.match(line, '^-') then
-				starcolor.color_line(nil, 'String', ui.buffer, i - 1)
+				starstyle.color_line(nil, 'String', ui.buffer, i - 1)
 			end
 		end
 	end)

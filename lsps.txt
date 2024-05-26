@@ -1,0 +1,4 @@
+zls
+clojure_lsp
+clangd
+pyright

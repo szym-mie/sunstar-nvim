@@ -6,6 +6,7 @@ local starplugin = {
 	plugins_checked = 0,
 }
 
+local starutil = require('starutil')
 local starpopup = require('starpopup')
 
 function starplugin.update_plugins ()
@@ -139,12 +140,7 @@ function starplugin.try_install ()
 end
 
 function starplugin.get_addons (plugin_load, filepath)
-	local abs_filepath = vim.fn.stdpath('config')..'/'..(filepath or 'plugins.txt')
-	local lines = vim.fn.readfile(abs_filepath)
-	for _, line in ipairs(lines) do
-		local comment_start, _ = string.find(line, '#')
-		local line_end = comment_start or 0
-		local plugin_id = string.gsub(string.sub(line, 1, line_end - 1), '%s', '')
+	for _, plugin_id in ipairs(starutil.read_flat_config(filepath)) do
 		if #plugin_id > 0 then
 			plugin_load(plugin_id)
 		end

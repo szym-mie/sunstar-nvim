@@ -1,7 +1,7 @@
-TODO
+FEATURES TODO
 suggestions/fixes
 
-# General
+=== General
 
 [1] more config options in lua modules ('setup' functions with more options,
     and sometimes any options :P).
@@ -12,7 +12,7 @@ suggestions/fixes
 
 [3] auto-save after typing, like in intelliJ editors.
 
-# starvcs
+=== starvcs
 
 [1] add 'git log' coloring via builtin highlighting (later, after the module
     gets basic functionality)
@@ -20,23 +20,23 @@ suggestions/fixes
 [2] make the module stable - right now it is quite unstable and in a more of
     a debug state than anything
 
-# starkeys
+=== starkeys
 
 [1] right now when the keystreak is incomplete, a window will appear, but the
     buffer is cleared and you have to retype the keystreak, add a loop keeping
     current selection and 'ESC' key clear keystreak to clear the current input.
 
-# starplugin
+=== starplugin
 
 [1] it seems the automatic update is broken for some reason, does not run
     on startup unless your local repos are clear/reverted. [DONE]
 
-# starfinder
+=== starfinder
 
 [1] a project finder tool, remembers last projects and any opened file
     outside of them. [MAJOR REDESIGN]
 
-# starproject
+=== starproject
 
 [1] create a project which remembers opened workspace (just opened files for 
     now), define commandline project tasks (build, clean, etc)
@@ -45,3 +45,41 @@ suggestions/fixes
 
 [3] ability to open project diectory as a project (if you cannot find it in 
     recents)
+
+=== starpopup
+
+[1] add clickable buttons
+
+
+TECHNICAL CONSIDERATIONS
+upgrades to existing structure
+
+=== starevent [WIP - phase 1]
+
+a unified bus to capture events coming from different modules.
+core concept is simple, however it would require a rewrite of every other
+module, it would be crucial then to make the interface complete and succint.
+
+[phase 1] implement module
+[phase 2] rewrite other modules
+
+=== starlog [PLAN]
+
+with an event bus this will simply capture all messages and write them to the
+log file.
+
+=== common UI API [PLAN]
+
+right now there are 2 modules which deal with UI: starwindow and starpopup.
+both of those had been created to initially serve one purpose:
+to show keystreak preview and plugin update notification respectively.
+since they had different functionality those do not share any API endpoints.
+
+a much better solution would be to make starwindow a primary window API, with
+starpopup delegated to only managing popup windows screenspace. the structure
+is already there but it still needs some work to make it more clear.
+
+more noteably there is a plan to add interactive elements to buffers, so that
+a page (a text buffer with lua driver) can be displayed as regular tab
+and in a window.
+

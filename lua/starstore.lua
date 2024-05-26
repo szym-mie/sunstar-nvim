@@ -131,23 +131,40 @@ function starstore.setup (_)
 	vim.api.nvim_create_autocmd({'VimLeave'}, {
 		callback = function (_)
 			for _, store in ipairs(starstore.stores) do
-				starstore.write(store)
+				if not store.discard_on_exit then
+					starstore.write(store)
+				end
 			end
 		end
 	})
 end
 
 function starstore.new (opts)
+	local open_store = starstore.get_store_by_path(opts.filepath)
+	if open_store ~= nil then
+		return open_store
+	end
 	local store = {
 		items = {},
 		filepath = opts.filepath,
 		apply_callbacks = opts.apply_callbacks,
+		discard_on_exit = opts.discard_on_exit or false,
+		has_file = nil
 	}
-	starstore.reload(store)
+	store.has_file = starstore.reload(store)
 	if not opts.untracked then
 		table.insert(starstore.stores, store)
 	end
 	return store
+end
+
+function starstore.is_open (filepath)
+	return starstore.get_store_by_path(filepath) ~= nil
+end
+
+function starstore.get_store_by_path (filepath)
+	local is_same_store = function (store) return store.filepath == filepath end
+	return starutil.list_find_first(starstore.stores, is_same_store)
 end
 
 function starstore.in_config_path (filename)
@@ -162,9 +179,9 @@ local function try_read_store (store)
 	return vim.fn.readfile(filepath)
 end
 
-local function try_write_store (store, obj)
+local function try_write_store (store, lines)
 	local filepath = store.filepath
-	vim.fn.writefile(obj, filepath)
+	vim.fn.writefile(lines, filepath)
 end
 
 function starstore.reload (store)
@@ -183,6 +200,7 @@ function starstore.write (store)
 end
 
 function starstore.overwrite (store)
+	vim.print(store.items)
 	try_write_store(store, write_lines(store.items, {}))
 end
 
@@ -203,6 +221,10 @@ function starstore.set (store, keys, value, reapply)
 			apply_fn(value)
 		end
 	end
+end
+
+function starstore.clear_all (store)
+	store.items = {}
 end
 
 function starstore.get_bool (store, key)

@@ -1,4 +1,5 @@
 local starplugin = require('starplugin')
+local starutil = require('starutil')
 
 
 vim.print('--- Messages start ---')
@@ -8,8 +9,8 @@ if not starplugin.try_install() then
 	vim.print('--- Installation summary ---')
 	vim.cmd.sleep(2)
 	local config_dir = vim.fn.stdpath('config')
-	local after_install_path = config_dir..'/AFTER_INSTALL.txt'
-	local init_path = config_dir..'/init.lua'
+	local after_install_path = config_dir .. '/AFTER_INSTALL.txt'
+	local init_path = config_dir .. '/init.lua'
 	vim.cmd.tabe(init_path)
 	vim.cmd.tabe(after_install_path)
 	if (starplugin.is_installed()) then
@@ -31,27 +32,10 @@ end
 vim.call('plug#begin')
 local Plug = vim.fn['plug#']
 
--- lsp
-Plug 'neovim/nvim-lspconfig'
-
--- completion
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'hrsh7th/cmp-buffer'
-Plug 'hrsh7th/cmp-path'
-Plug 'hrsh7th/cmp-cmdline'
-Plug 'hrsh7th/nvim-cmp'
-
-Plug 'hrsh7th/vim-vsnip'
-Plug 'hrsh7th/cmp-vsnip'
-
--- file explorer + icons
-Plug 'stevearc/oil.nvim'
-Plug 'nvim-tree/nvim-web-devicons'
-
--- smooth scroll
-Plug 'karb94/neoscroll.nvim'
-
-starplugin.get_addons(Plug)
+-- core plugins
+starplugin.get_addons(Plug, 'plugins_core.txt')
+-- user plugins
+starplugin.get_addons(Plug, 'plugins.txt')
 
 vim.call('plug#end')
 
@@ -73,12 +57,15 @@ local main_config = starstore.new({
 	}
 })
 
+-- initialize popups
 local starpopup = require('starpopup')
 starpopup.setup({})
 
+-- initialize keybinds
 local starkeys = require('starkeys')
 starkeys.setup({})
 
+-- initialize VCS integration
 local starvcs = require('starvcs')
 starvcs.setup({})
 
@@ -89,13 +76,21 @@ starplugin.run_update()
 -- keys
 local config_keys = {
 	starkeys.group { path = 'fc', name = 'Config' },
-	starkeys.cmd { path = 'fcr', name = 'reload', run = function ()
-		starstore.reload(main_config)
-	end },
-	starkeys.cmd { path = 'T', name = 'theme', run = function ()
-		local theme = vim.fn.input('theme: ', '', 'color')
-		starstore.set(main_config, starstore.qname_of('theme'), theme, true)
-	end },
+	starkeys.cmd {
+		path = 'fcr',
+		name = 'reload',
+		run = function()
+			starstore.reload(main_config)
+		end,
+	},
+	starkeys.cmd {
+		path = 'T',
+		name = 'theme',
+		run = function()
+			local theme = vim.fn.input('theme: ', '', 'color')
+			starstore.set(main_config, starstore.qname_of('theme'), theme, true)
+		end,
+	},
 }
 
 starkeys.add_keys(config_keys)
@@ -134,7 +129,7 @@ cmp.setup.filetype('gitcommit', {
 -- lsp
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 local lspconfig = require('lspconfig')
-local servers = {'zls', 'clojure_lsp', 'clangd', 'hls'}
+local servers = starutil.read_flat_config('lsps.txt')
 for _, lsp in ipairs(servers) do
 	lspconfig[lsp].setup {
 		capabilities = capabilities
@@ -142,7 +137,7 @@ for _, lsp in ipairs(servers) do
 end
 vim.api.nvim_create_autocmd('LspAttach', {
 	group = vim.api.nvim_create_augroup('UserLspConfig', {}),
-	callback = function (ev)
+	callback = function(ev)
 		vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
 
 		local opts = { buffer = ev.buf }
@@ -163,7 +158,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 local lsp_border = 'rounded'
 vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
-  	vim.lsp.handlers.hover,
+	vim.lsp.handlers.hover,
 	{ border = lsp_border }
 )
 vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
@@ -218,11 +213,6 @@ oil.setup({
 })
 
 
--- enhanced scroll
-local neoscroll = require('neoscroll')
-neoscroll.setup()
-
-
 -- core config
 local core_config = require('config.core')
 core_config.setup({})
@@ -233,4 +223,3 @@ if #vim.fn.expand('%:p') == 0 then
 	vim.cmd(':e .')
 	require('screens.splash')
 end
-
