@@ -21,7 +21,7 @@
       [ Github ]
       https://github.com/szym-mie/sunstar-nvim
 
-    # Installation
+### Installation
 
       nvim config can be found in:
       - Windows                      - Unix
@@ -36,7 +36,12 @@
          default suite of plugins.
 
 
-    # Features
+### Screenshots
+
+![screenshot1](./sshot1.png)
+![screenshot2](./sshot2.png)
+
+### Features
       
       1. Ergonomic mappings (space-keys) - instead of typing commands,
          use space and combination of keys to perform actions.
@@ -54,7 +59,7 @@
          configure any plugin you want - just edit init.lua.
 
 
-    # Configuration
+### Configuration
 
       1. You can easily install themes and other plugins, while in neovim 
          hit [Space-f-e-a] to edit file 'plugins.txt'.
@@ -64,3 +69,4 @@
 
       3. sunstar config contains some specific options in a more convient
          format. edit it by [Space-f-e-c].
+
